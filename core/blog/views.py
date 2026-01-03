@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView, RedirectView
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, FormView, CreateView, UpdateView,DeleteView
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from blog.forms import CreatePostForm
+from blog.forms import CustomGeneralPostForm
 from .models import Post
 
 
@@ -33,7 +34,7 @@ class RedirectToMaktabkhoonehView(RedirectView):
         return super().get_redirect_url(*args, **kwargs)
 
 
-class PostListView(ListView):
+class PostListView(LoginRequiredMixin, ListView):
     model = Post
     # queryset = Post.objects.all()
     # def get_queryset(self):
@@ -46,6 +47,7 @@ class PostListView(ListView):
     context_object_name = "posts"
 
 
+"""
 class PostCreateView(FormView):
     template_name = "blog/contact.html"
     form_class = CreatePostForm
@@ -54,3 +56,25 @@ class PostCreateView(FormView):
     def form_valid(self, form):
         form.save()
         return super().form_valid(form)
+"""
+
+
+class PostCreateView(LoginRequiredMixin,CreateView):
+    model = Post
+    fields = ["title", "content", "status", "category"]
+    template_name = "blog/contact.html"
+    success_url = "/blog/post/"
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class PostUpdateView(LoginRequiredMixin,UpdateView):
+    model = Post
+    form_class = CustomGeneralPostForm
+    success_url = "/blog/post/"
+
+class PostDeleteView(LoginRequiredMixin,DeleteView):
+    model = Post
+    success_url = "/blog/post/"

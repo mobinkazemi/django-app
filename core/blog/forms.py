@@ -2,8 +2,8 @@ from django import forms
 from .models import Post
 
 
-class CreatePostForm(forms.ModelForm):
+class CustomGeneralPostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["author", "title", "content", "status", "category"]
+        fields = ["title", "content", "status", "category"]

@@ -2,7 +2,7 @@
     <h1>Post List</h1>
     <ul>
         {% for post in posts %}
-            <li>{{ post.title }} - {{ post.created_date }}</li>
+            <li>id:{{post.id}} - {{ post.title }} - {{ post.created_date }} - By: {{post.author}}</li>
         {% endfor %}
     </ul>
 </body>
