@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from accounts.models import Profile
+
 User = get_user_model()
 
 
@@ -19,6 +20,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_content_snippet(self):
+        return self.content[0:5] + "..."
 
 
 class Category(models.Model):
