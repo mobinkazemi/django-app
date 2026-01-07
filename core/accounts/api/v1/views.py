@@ -73,10 +73,9 @@ class ResetPasswordAPIView(UpdateAPIView):
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
-        print(self.object)
+
         if serializer.is_valid():
-            print(serializer.validated_data["old_password"])
-            print(self.object.check_password(serializer.validated_data["old_password"]))
+
             if not self.object.check_password(serializer.validated_data["old_password"]):
                 return Response(
                     {"details": "old password is not valid"},
