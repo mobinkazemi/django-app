@@ -79,3 +79,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class ResetPasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
+    repeat_new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        new_password = attrs.get("new_password")
+        repeat_new_password = attrs.get("repeat_new_password")
+        if new_password != repeat_new_password:
+            raise serializers.ValidationError(
+                {"details": "New passwords do not match."}
+            )
+
+        try:
+            validate_password(new_password)
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError({"new_password": list(e.messages)})  # type: ignore
+        return super().validate(attrs)
