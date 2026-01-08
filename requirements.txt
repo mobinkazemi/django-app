@@ -4,3 +4,6 @@ Pillow
 djangorestframework
 markdown
 django-filter
+# PyPI package name (required for pip):
+# import name is `rest_framework_simplejwt`, but pip installs `djangorestframework-simplejwt`
+djangorestframework-simplejwt
