@@ -23,4 +23,5 @@ urlpatterns = [
     path(
         "password/reset/", views.ResetPasswordAPIView.as_view(), name="reset-password"
     ),
+    path("profile/", views.GetProfileAPIView.as_view(), name="user-self-profile"),
 ]

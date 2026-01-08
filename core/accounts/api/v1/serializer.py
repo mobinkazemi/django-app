@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ...models import User
+from ...models import User, Profile
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
@@ -52,9 +52,6 @@ class CustomAuthTokenSerializer(serializers.Serializer):
                 password=password,
             )
 
-            # The authenticate call simply returns None for is_active=False
-            # users. (Assuming the default ModelBackend authentication
-            # backend.)
             if not user:
                 msg = _("Unable to log in with provided credentials.")
                 raise serializers.ValidationError(msg, code="authorization")
@@ -63,6 +60,10 @@ class CustomAuthTokenSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg, code="authorization")
 
         attrs["user"] = user
+
+        if user.is_verified is False:  # type: ignore
+            msg = _("User is not verified.")
+            raise serializers.ValidationError(msg, code="authorization")
         return attrs
 
 
@@ -72,6 +73,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         validated_data["email"] = self.user.email  # type: ignore
         validated_data["user_id"] = self.user.id  # type: ignore
+
+        if self.user.is_verified is False:  # type: ignore
+            msg = _("User is not verified.")
+            raise serializers.ValidationError(msg, code="authorization")
 
         return validated_data
 
@@ -94,3 +99,21 @@ class ResetPasswordSerializer(serializers.Serializer):
         except serializers.ValidationError as e:
             raise serializers.ValidationError({"new_password": list(e.messages)})  # type: ignore
         return super().validate(attrs)
+
+
+class GetUserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", read_only=True)
+    is_verified = serializers.BooleanField(source="user.is_verified", read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = [
+            "email",
+            "is_verified",
+            "first_name",
+            "last_name",
+            "description",
+            "image",
+            "created_date",
+            "updated_date",
+        ]

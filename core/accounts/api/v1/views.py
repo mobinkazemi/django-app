@@ -1,9 +1,10 @@
-from rest_framework.generics import GenericAPIView, UpdateAPIView
+from rest_framework.generics import GenericAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializer import (
     CustomAuthTokenSerializer,
     CustomTokenObtainPairSerializer,
+    GetUserProfileSerializer,
     RegistrationSerializer,
     ResetPasswordSerializer,
 )
@@ -17,8 +18,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from ...models import User
-
+from ...models import User, Profile
+from django.shortcuts import get_object_or_404
 
 class RegistrationView(GenericAPIView):
     serializer_class = RegistrationSerializer
@@ -76,7 +77,9 @@ class ResetPasswordAPIView(UpdateAPIView):
 
         if serializer.is_valid():
 
-            if not self.object.check_password(serializer.validated_data["old_password"]):
+            if not self.object.check_password(
+                serializer.validated_data["old_password"]
+            ):
                 return Response(
                     {"details": "old password is not valid"},
                     status=HTTP_400_BAD_REQUEST,
@@ -94,3 +97,22 @@ class ResetPasswordAPIView(UpdateAPIView):
             return Response(response)
 
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class GetProfileAPIView(RetrieveUpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = GetUserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        self.object = get_object_or_404(queryset, user=self.request.user)
+        return self.object
+    
+    
+    # def get(self, request, *args, **kwargs):
+    #     user = request.user
+    #     profile = Profile.objects.get(user=user.id)
+    #     serializer = self.get_serializer(profile)
+    #     # send profile data alongside email from user.email
+    #     return Response(serializer.data, status=HTTP_200_OK)
